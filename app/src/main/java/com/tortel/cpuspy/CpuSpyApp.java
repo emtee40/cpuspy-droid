@@ -19,9 +19,6 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.tortel.cpuspy.CpuStateMonitor.CpuState;
-import com.tortel.cpuspy.CpuStateMonitor.CpuStateMonitorException;
-
 /** main application class */
 public class CpuSpyApp extends Application {
 
@@ -41,12 +38,15 @@ public class CpuSpyApp extends Application {
      * On application start, load the saved offsets and stash the
      * current kernel version string
      */
-    @Override public void onCreate(){
+    @Override
+    public void onCreate(){
         loadOffsets();
         updateKernelVersion();
     }
 
-    /** @return the kernel version string */
+    /**
+     * @return the kernel version string
+     */
     public String getKernelVersion() {
         return _kernelVersion;
     }
@@ -101,7 +101,9 @@ public class CpuSpyApp extends Application {
         editor.commit();
     }
 
-    /** Try to read the kernel version string from the proc fileystem */
+    /**
+     * Try to read the kernel version string from the proc fileystem
+     */
     public String updateKernelVersion() {
         try {
             InputStream is = new FileInputStream(KERNEL_VERSION_PATH);

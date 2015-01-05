@@ -8,7 +8,7 @@
     >
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         >
@@ -45,17 +45,17 @@
 
     <ProgressBar
         android:id="@+id/ui_bar"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="10dp"
         style="?android:attr/progressBarStyleHorizontal"
         android:max="100"
         />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
+    <View
+        android:layout_width="match_parent"
         android:layout_height="1px"
         android:layout_marginTop="5dp"
-        android:background="#444"
+        android:background="@color/divider"
         />
 
 </LinearLayout>

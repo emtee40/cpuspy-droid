@@ -60,7 +60,9 @@ public class CpuStateMonitor {
         }
     }
 
-    /** @return List of CpuState with the offsets applied */
+    /**
+     * @return List of CpuState with the offsets applied
+     */
     public List<CpuState> getStates() {
         List<CpuState> states = new ArrayList<CpuState>();
 
@@ -112,7 +114,9 @@ public class CpuStateMonitor {
         return _offsets;
     }
 
-    /** Sets the offset map (freq->duration offset) */
+    /**
+     * Sets the offset map (freq->duration offset)
+     */
     public void setOffsets(Map<Integer, Long> offsets) {
         _offsets = offsets;
     }
@@ -130,7 +134,9 @@ public class CpuStateMonitor {
         }
     }
 
-    /** removes state offsets */
+    /**
+     * removes state offsets
+     */
     public void removeOffsets() {
         _offsets.clear();
     }
@@ -166,7 +172,8 @@ public class CpuStateMonitor {
         return _states;
     }
 
-    /** read from a provided BufferedReader the state lines into the
+    /**
+     * read from a provided BufferedReader the state lines into the
      * States member field
      */
     private void readInStates(BufferedReader br)

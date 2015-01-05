@@ -2,4 +2,21 @@
 <resources>
     <string name="app_name">CPU Spy</string>
     <string name="version_name">dev</string>
+
+    <!-- Main activity strings -->
+    <string name="time_in_state">Time In State</string>
+    <string name="unused_states">Unused CPU States</string>
+    <string name="total_time">Total State Time</string>
+    <string name="kernel_info">Kernel Info</string>
+    <string name="kernel">Kernel</string>
+
+    <string name="deep_sleep">Deep Sleep</string>
+
+    <!-- Menu strings -->
+    <string name="refresh">Refresh</string>
+    <string name="reset_time">Reset Timers</string>
+    <string name="restore_time">Restore Timers</string>
+
+    <!-- Warning strings -->
+    <string name="warning_no_state">No states file found. Are you sure your phone is compatible?\n\nIf you are running a custom ROM or kernel, try contacting its developer to inform him that the states file is not readable.</string>
 </resources>

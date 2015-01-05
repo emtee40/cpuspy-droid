@@ -10,10 +10,10 @@ package com.tortel.cpuspy.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,8 +30,7 @@ import com.tortel.cpuspy.CpuStateMonitor.CpuStateMonitorException;
 import android.util.Log;
 
 /** main activity class */
-public class HomeActivity extends Activity
-{
+public class HomeActivity extends ActionBarActivity {
     private static final String TAG = "CpuSpy";
 
     private CpuSpyApp _app = null;
@@ -45,12 +44,16 @@ public class HomeActivity extends Activity
     private TextView        _uiStatesWarning = null;
     private TextView        _uiKernelString = null;
 
-    /** whether or not we're updating the data in the background */
+    /**
+     * whether or not we're updating the data in the background
+     */
     private boolean     _updatingData = false;
 
-    /** Initialize the Activity */
-    @Override public void onCreate(Bundle savedInstanceState)
-    {
+    /**
+     * Initialize the Activity
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // inflate the view, stash the app context, and get all UI elements
@@ -58,30 +61,34 @@ public class HomeActivity extends Activity
         _app = (CpuSpyApp)getApplicationContext();
         findViews();
 
-        // set title to version string
-        setTitle(getResources().getText(R.string.app_name) + " v" +
-        getResources().getText(R.string.version_name));
-
         // see if we're updating data during a config change (rotate screen)
         if (savedInstanceState != null) {
             _updatingData = savedInstanceState.getBoolean("updatingData");
         }
     }
 
-    /** When the activity is about to change orientation */
-    @Override public void onSaveInstanceState(Bundle outState) {
+    /**
+     * When the activity is about to change orientation
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("updatingData", _updatingData);
     }
 
 
-    /** Update the view when the application regains focus */
-    @Override public void onResume () {
+    /**
+     * Update the view when the application regains focus
+     */
+    @Override
+    public void onResume () {
         super.onResume();
         refreshData();
     }
 
-    /** Map all of the UI elements to member variables */
+    /**
+     * Map all of the UI elements to member variables
+     */
     private void findViews() {
         _uiStatesView = (LinearLayout)findViewById(R.id.ui_states_view);
         _uiKernelString = (TextView)findViewById(R.id.ui_kernel_string);
@@ -95,8 +102,11 @@ public class HomeActivity extends Activity
         _uiTotalStateTime = (TextView)findViewById(R.id.ui_total_state_time);
     }
 
-    /** called when we want to infalte the menu */
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
+    /**
+     * Called when we want to infalte the menu
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
         // request inflater from activity and inflate into its menu
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.home_menu, menu);
@@ -105,8 +115,11 @@ public class HomeActivity extends Activity
         return true;
     }
 
-    /** called to handle a menu event */
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
+    /**
+     * called to handle a menu event
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         // what it do mayne
         switch (item.getItemId()) {
         /* pressed the load menu button */
@@ -134,7 +147,9 @@ public class HomeActivity extends Activity
         return true;
     }
 
-    /** Generate and update all UI elements */
+    /**
+     * Generate and update all UI elements
+     */
     public void updateView() {
         /** Get the CpuStateMonitor from the app, and iterate over all states,
          * creating a row if the duration is > 0 or otherwise marking it in
@@ -147,7 +162,7 @@ public class HomeActivity extends Activity
                 generateStateRow(state, _uiStatesView);
             } else {
                 if (state.freq == 0) {
-                    extraStates.add("Deep Sleep");
+                    extraStates.add(getString(R.string.deep_sleep));
                 } else {
                     extraStates.add(state.freq/1000 + " MHz");
                 }
@@ -189,14 +204,18 @@ public class HomeActivity extends Activity
         _uiKernelString.setText(_app.getKernelVersion());
     }
 
-    /** Attempt to update the time-in-state info */
+    /**
+     * Attempt to update the time-in-state info
+     */
     public void refreshData() {
         if (!_updatingData) {
             new RefreshStateDataTask().execute((Void)null);
         }
     }
 
-    /** @return A nicely formatted String representing tSec seconds */
+    /**
+     * @return A nicely formatted String representing tSec seconds
+     */
     private static String sToString(long tSec) {
         long h = (long)Math.floor(tSec / (60*60));
         long m = (long)Math.floor((tSec - h*60*60) / 60);
@@ -232,7 +251,7 @@ public class HomeActivity extends Activity
         // state name
         String sFreq;
         if (state.freq == 0) {
-            sFreq = "Deep Sleep";
+            sFreq = getString(R.string.deep_sleep);
         } else {
             sFreq = state.freq / 1000 + " MHz";
         }
@@ -260,11 +279,16 @@ public class HomeActivity extends Activity
         return theRow;
     }
 
-    /** Keep updating the state data off the UI thread for slow devices */
+    /**
+     * Keep updating the state data off the UI thread for slow devices
+     */
     protected class RefreshStateDataTask extends AsyncTask<Void, Void, Void> {
 
-        /** Stuff to do on a seperate thread */
-        @Override protected Void doInBackground(Void... v) {
+        /**
+         * Stuff to do on a seperate thread
+         */
+        @Override
+        protected Void doInBackground(Void... v) {
             CpuStateMonitor monitor = _app.getCpuStateMonitor();
             try {
                 monitor.updateStates();
@@ -275,21 +299,29 @@ public class HomeActivity extends Activity
             return null;
         }
 
-        /** Executed on the UI thread right before starting the task */
-        @Override protected void onPreExecute() {
+        /**
+         * Executed on the UI thread right before starting the task
+         */
+        @Override
+        protected void onPreExecute() {
             log("starting data update");
             _updatingData = true;
         }
 
-        /** Executed on UI thread after task */
-        @Override protected void onPostExecute(Void v) {
+        /**
+         * Executed on UI thread after task
+         */
+        @Override
+        protected void onPostExecute(Void v) {
             log("finished data update");
             _updatingData = false;
             updateView();
         }
     }
 
-    /** logging */
+    /**
+     * logging
+     */
     private void log(String s) {
         Log.d(TAG, s);
     }
