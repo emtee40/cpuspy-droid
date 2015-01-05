@@ -4,7 +4,7 @@
 //
 //-----------------------------------------------------------------------------
 
-package com.bvalosek.cpuspy;
+package com.tortel.cpuspy;
 
 // imports
 import java.io.BufferedReader;

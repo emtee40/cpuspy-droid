@@ -4,7 +4,7 @@
 //
 //-----------------------------------------------------------------------------
 
-package com.bvalosek.cpuspy.ui;
+package com.tortel.cpuspy.ui;
 
 // imports
 import java.util.ArrayList;
@@ -24,9 +24,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.bvalosek.cpuspy.*;
-import com.bvalosek.cpuspy.CpuStateMonitor.CpuState;
-import com.bvalosek.cpuspy.CpuStateMonitor.CpuStateMonitorException;
+import com.tortel.cpuspy.*;
+import com.tortel.cpuspy.CpuStateMonitor.CpuState;
+import com.tortel.cpuspy.CpuStateMonitor.CpuStateMonitorException;
 import android.util.Log;
 
 /** main activity class */
