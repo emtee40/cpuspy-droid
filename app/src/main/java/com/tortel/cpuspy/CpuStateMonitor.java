@@ -14,11 +14,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.os.SystemClock;
+import android.util.SparseArray;
 
 /**
  * CpuStateMonitor is a class responsible for querying the system and getting
@@ -32,8 +31,8 @@ public class CpuStateMonitor {
 
     private static final String TAG = "CpuStateMonitor";
 
-    private List<CpuState>      _states = new ArrayList<CpuState>();
-    private Map<Integer, Long>  _offsets = new HashMap<Integer, Long>();
+    private List<CpuState>      _states = new ArrayList<>();
+    private SparseArray<Long>  _offsets = new SparseArray<>();
 
     /** exception class */
     public class CpuStateMonitorException extends Exception {
@@ -70,7 +69,7 @@ public class CpuStateMonitor {
          * from the duration, otherwise just add it to the return List */
         for (CpuState state : _states) {
             long duration = state.duration;
-            if (_offsets.containsKey(state.freq)) {
+            if(_offsets.indexOfKey(state.freq) >= 0){
                 long offset = _offsets.get(state.freq);
                 if (offset <= duration) {
                     duration -= offset;
@@ -100,8 +99,8 @@ public class CpuStateMonitor {
             sum += state.duration;
         }
 
-        for (Map.Entry<Integer, Long> entry : _offsets.entrySet()) {
-            offset += entry.getValue();
+        for (int i=0; i < _offsets.size(); i++) {
+            offset += _offsets.valueAt(i);
         }
 
         return sum - offset;
@@ -110,14 +109,14 @@ public class CpuStateMonitor {
     /**
      * @return Map of freq->duration of all the offsets
      */
-    public Map<Integer, Long> getOffsets() {
+    public SparseArray<Long> getOffsets() {
         return _offsets;
     }
 
     /**
      * Sets the offset map (freq->duration offset)
      */
-    public void setOffsets(Map<Integer, Long> offsets) {
+    public void setOffsets(SparseArray<Long> offsets) {
         _offsets = offsets;
     }
 

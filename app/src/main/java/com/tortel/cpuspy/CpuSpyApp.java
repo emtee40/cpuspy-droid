@@ -18,6 +18,7 @@ import java.util.Map;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.util.SparseArray;
 
 /** main application class */
 public class CpuSpyApp extends Application {
@@ -70,7 +71,7 @@ public class CpuSpyApp extends Application {
         }
 
         // split the string by peroids and then the info by commas and load
-        Map<Integer, Long> offsets = new HashMap<Integer, Long>();
+        SparseArray<Long> offsets = new SparseArray<>();
         String[] sOffsets = prefs.split(",");
         for (String offset : sOffsets) {
             String[] parts = offset.split(" ");
@@ -92,13 +93,13 @@ public class CpuSpyApp extends Application {
 
         // build the string by iterating over the freq->duration map
         String str = "";
-        for (Map.Entry<Integer, Long> entry :
-                _monitor.getOffsets().entrySet()) {
-            str += entry.getKey() + " " + entry.getValue() + ",";
+        SparseArray<Long> offsets = _monitor.getOffsets();
+        for (int i =0; i < offsets.size(); i++) {
+            str += offsets.keyAt(i) + " " + offsets.valueAt(i) + ",";
         }
 
         editor.putString(PREF_OFFSETS, str);
-        editor.commit();
+        editor.apply();
     }
 
     /**
