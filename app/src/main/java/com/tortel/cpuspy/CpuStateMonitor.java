@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // (C) Brandon Valosek, 2011 <bvalosek@gmail.com>
+// (C) Scott Warner, 2017 <Tortel1210@gmail.com>
 //
 //-----------------------------------------------------------------------------
 
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.util.SparseArray;
 
 /**
@@ -26,17 +28,15 @@ import android.util.SparseArray;
  */
 public class CpuStateMonitor {
 
-    public static final String TIME_IN_STATE_PATH =
+    private static final String TIME_IN_STATE_PATH =
         "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state";
 
-    private static final String TAG = "CpuStateMonitor";
-
-    private List<CpuState>      _states = new ArrayList<>();
-    private SparseArray<Long>  _offsets = new SparseArray<>();
+    private List<CpuState> mStates = new ArrayList<>();
+    private SparseArray<Long> mOffsets = new SparseArray<>();
 
     /** exception class */
     public class CpuStateMonitorException extends Exception {
-        public CpuStateMonitorException(String s) {
+        CpuStateMonitorException(String s) {
             super(s);
         }
     }
@@ -46,16 +46,14 @@ public class CpuStateMonitor {
      */
     public class CpuState implements Comparable<CpuState> {
         /** init with freq and duration */
-        public CpuState(int a, long b) { freq = a; duration = b; }
+        CpuState(int a, long b) { freq = a; duration = b; }
 
         public int freq = 0;
         public long duration = 0;
 
         /** for sorting, compare the freqs */
-        public int compareTo(CpuState state) {
-            Integer a = new Integer(freq);
-            Integer b = new Integer(state.freq);
-            return a.compareTo(b);
+        public int compareTo(@NonNull CpuState state) {
+            return Integer.compare(freq, state.freq);
         }
     }
 
@@ -63,20 +61,20 @@ public class CpuStateMonitor {
      * @return List of CpuState with the offsets applied
      */
     public List<CpuState> getStates() {
-        List<CpuState> states = new ArrayList<CpuState>();
+        List<CpuState> states = new ArrayList<>();
 
         /* check for an existing offset, and if it's not too big, subtract it
          * from the duration, otherwise just add it to the return List */
-        for (CpuState state : _states) {
+        for (CpuState state : mStates) {
             long duration = state.duration;
-            if(_offsets.indexOfKey(state.freq) >= 0){
-                long offset = _offsets.get(state.freq);
+            if(mOffsets.indexOfKey(state.freq) >= 0){
+                long offset = mOffsets.get(state.freq);
                 if (offset <= duration) {
                     duration -= offset;
                 } else {
                     /* offset > duration implies our offsets are now invalid,
                      * so clear and recall this function */
-                    _offsets.clear();
+                    mOffsets.clear();
                     return getStates();
                 }
             }
@@ -95,12 +93,12 @@ public class CpuStateMonitor {
         long sum = 0;
         long offset = 0;
 
-        for (CpuState state : _states) {
+        for (CpuState state : mStates) {
             sum += state.duration;
         }
 
-        for (int i=0; i < _offsets.size(); i++) {
-            offset += _offsets.valueAt(i);
+        for (int i = 0; i < mOffsets.size(); i++) {
+            offset += mOffsets.valueAt(i);
         }
 
         return sum - offset;
@@ -109,15 +107,15 @@ public class CpuStateMonitor {
     /**
      * @return Map of freq->duration of all the offsets
      */
-    public SparseArray<Long> getOffsets() {
-        return _offsets;
+    SparseArray<Long> getOffsets() {
+        return mOffsets;
     }
 
     /**
      * Sets the offset map (freq->duration offset)
      */
-    public void setOffsets(SparseArray<Long> offsets) {
-        _offsets = offsets;
+    void setOffsets(SparseArray<Long> offsets) {
+        mOffsets = offsets;
     }
 
     /**
@@ -125,11 +123,11 @@ public class CpuStateMonitor {
      * current duration, effectively "zeroing out" the timers
      */
     public void setOffsets() throws CpuStateMonitorException {
-        _offsets.clear();
+        mOffsets.clear();
         updateStates();
 
-        for (CpuState state : _states) {
-            _offsets.put(state.freq, state.duration);
+        for (CpuState state : mStates) {
+            mOffsets.put(state.freq, state.duration);
         }
     }
 
@@ -137,7 +135,7 @@ public class CpuStateMonitor {
      * removes state offsets
      */
     public void removeOffsets() {
-        _offsets.clear();
+        mOffsets.clear();
     }
 
     /**
@@ -152,7 +150,7 @@ public class CpuStateMonitor {
             InputStream is = new FileInputStream(TIME_IN_STATE_PATH);
             InputStreamReader ir = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(ir);
-            _states.clear();
+            mStates.clear();
             readInStates(br);
             is.close();
         } catch (IOException e) {
@@ -164,11 +162,11 @@ public class CpuStateMonitor {
          * (total) boot time and the system uptime (awake) */
         long sleepTime = (SystemClock.elapsedRealtime()
                 - SystemClock.uptimeMillis()) / 10;
-        _states.add(new CpuState(0, sleepTime));
+        mStates.add(new CpuState(0, sleepTime));
 
-        Collections.sort(_states, Collections.reverseOrder());
+        Collections.sort(mStates, Collections.reverseOrder());
 
-        return _states;
+        return mStates;
     }
 
     /**
@@ -182,7 +180,7 @@ public class CpuStateMonitor {
             while ((line = br.readLine()) != null) {
                 // split open line and convert to Integers
                 String[] nums = line.split(" ");
-                _states.add(new CpuState(
+                mStates.add(new CpuState(
                         Integer.parseInt(nums[0]),
                         Long.parseLong(nums[1])));
             }

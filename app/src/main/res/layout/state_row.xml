@@ -17,10 +17,12 @@
             android:id="@+id/ui_freq_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="17dp"
+            android:textSize="17sp"
             android:textColor="#ffffff"
+            android:gravity="start"
             android:layout_weight="1"
             android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             tools:text="500mhz"
             />
 
@@ -29,9 +31,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#ffffff"
-            android:gravity="right"
+            android:gravity="end"
             android:layout_weight="1"
             android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             tools:text="0:00:00"
             />
 
@@ -40,9 +43,10 @@
             android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:textColor="#ffffff"
-            android:gravity="right"
+            android:gravity="end"
             android:layout_weight="0"
             android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
             tools:text="10%"
             />
 
@@ -53,6 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="10dp"
         style="?android:attr/progressBarStyleHorizontal"
+        tools:progress="50"
         android:max="100"
         />
 

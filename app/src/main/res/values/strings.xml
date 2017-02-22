@@ -19,4 +19,5 @@
 
     <!-- Warning strings -->
     <string name="warning_no_state">No states file found. Are you sure your phone is compatible?\n\nIf you are running a custom ROM or kernel, try contacting its developer to inform him that the states file is not readable.</string>
+    <string name="unknown">Unknown</string>
 </resources>

@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // (C) Brandon Valosek, 2011 <bvalosek@gmail.com>
+// (C) Scott Warner, 2017 <Tortel1210@gmail.com>
 //
 //-----------------------------------------------------------------------------
 
@@ -12,8 +13,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -31,9 +30,9 @@ public class CpuSpyApp extends Application {
     private static final String PREF_OFFSETS = "offsets";
 
     /** the long-living object used to monitor the system frequency states */
-    private CpuStateMonitor _monitor = new CpuStateMonitor();
+    private CpuStateMonitor mMonitor = new CpuStateMonitor();
 
-    private String _kernelVersion = "";
+    private String mKernelVersion = "";
 
     /**
      * On application start, load the saved offsets and stash the
@@ -41,6 +40,7 @@ public class CpuSpyApp extends Application {
      */
     @Override
     public void onCreate(){
+        super.onCreate();
         loadOffsets();
         updateKernelVersion();
     }
@@ -49,12 +49,12 @@ public class CpuSpyApp extends Application {
      * @return the kernel version string
      */
     public String getKernelVersion() {
-        return _kernelVersion;
+        return mKernelVersion;
     }
 
     /** @return the internal CpuStateMonitor object */
     public CpuStateMonitor getCpuStateMonitor() {
-        return _monitor;
+        return mMonitor;
     }
 
     /**
@@ -66,7 +66,7 @@ public class CpuSpyApp extends Application {
                 PREF_NAME, MODE_PRIVATE);
         String prefs = settings.getString (PREF_OFFSETS, "");
 
-        if (prefs == null || prefs.length() < 1) {
+        if (prefs.length() < 1) {
             return;
         }
 
@@ -79,7 +79,7 @@ public class CpuSpyApp extends Application {
                          Long.parseLong(parts[1]));
         }
 
-        _monitor.setOffsets(offsets);
+        mMonitor.setOffsets(offsets);
     }
 
     /**
@@ -93,7 +93,7 @@ public class CpuSpyApp extends Application {
 
         // build the string by iterating over the freq->duration map
         String str = "";
-        SparseArray<Long> offsets = _monitor.getOffsets();
+        SparseArray<Long> offsets = mMonitor.getOffsets();
         for (int i =0; i < offsets.size(); i++) {
             str += offsets.keyAt(i) + " " + offsets.valueAt(i) + ",";
         }
@@ -105,7 +105,7 @@ public class CpuSpyApp extends Application {
     /**
      * Try to read the kernel version string from the proc fileystem
      */
-    public String updateKernelVersion() {
+    public void updateKernelVersion() {
         try {
             InputStream is = new FileInputStream(KERNEL_VERSION_PATH);
             InputStreamReader ir = new InputStreamReader(is);
@@ -113,16 +113,13 @@ public class CpuSpyApp extends Application {
 
             String line;
             while ((line = br.readLine())!= null ) {
-                _kernelVersion = line;
+                mKernelVersion = line;
             }
 
             is.close();
         } catch (IOException e) {
             Log.e(TAG, "Problem reading kernel version file");
-            return "";
+            mKernelVersion = getString(R.string.unknown);
         }
-
-        // made it
-        return _kernelVersion;
     }
 }
