@@ -15,9 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import android.app.Application;
-import android.content.SharedPreferences;
 import android.util.Log;
-import android.util.SparseArray;
 
 /** main application class */
 public class CpuSpyApp extends Application {
@@ -41,7 +39,6 @@ public class CpuSpyApp extends Application {
     @Override
     public void onCreate(){
         super.onCreate();
-        loadOffsets();
         updateKernelVersion();
     }
 
@@ -55,51 +52,6 @@ public class CpuSpyApp extends Application {
     /** @return the internal CpuStateMonitor object */
     public CpuStateMonitor getCpuStateMonitor() {
         return mMonitor;
-    }
-
-    /**
-     * Load the saved string of offsets from preferences and put it into
-     * the state monitor
-     */
-    public void loadOffsets() {
-        SharedPreferences settings = getSharedPreferences(
-                PREF_NAME, MODE_PRIVATE);
-        String prefs = settings.getString (PREF_OFFSETS, "");
-
-        if (prefs.length() < 1) {
-            return;
-        }
-
-        // split the string by peroids and then the info by commas and load
-        SparseArray<Long> offsets = new SparseArray<>();
-        String[] sOffsets = prefs.split(",");
-        for (String offset : sOffsets) {
-            String[] parts = offset.split(" ");
-            offsets.put (Integer.parseInt(parts[0]),
-                         Long.parseLong(parts[1]));
-        }
-
-        mMonitor.setOffsets(offsets);
-    }
-
-    /**
-     * Save the state-time offsets as a string
-     * e.g. "100 24, 200 251, 500 124 etc
-     */
-    public void saveOffsets() {
-        SharedPreferences settings = getSharedPreferences(
-                PREF_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-
-        // build the string by iterating over the freq->duration map
-        String str = "";
-        SparseArray<Long> offsets = mMonitor.getOffsets();
-        for (int i =0; i < offsets.size(); i++) {
-            str += offsets.keyAt(i) + " " + offsets.valueAt(i) + ",";
-        }
-
-        editor.putString(PREF_OFFSETS, str);
-        editor.apply();
     }
 
     /**

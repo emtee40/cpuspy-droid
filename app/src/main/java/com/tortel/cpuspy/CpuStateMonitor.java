@@ -19,6 +19,7 @@ import java.util.List;
 
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.util.SparseArray;
 
 /**
@@ -27,12 +28,14 @@ import android.util.SparseArray;
  * offsets to "restart" the state timers
  */
 public class CpuStateMonitor {
-
     private static final String TIME_IN_STATE_PATH =
-        "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state";
+        "/sys/devices/system/cpu/cpuNUM/cpufreq/stats/time_in_state";
+    private static final String CPU_COUNT_CMD =
+            "cat /proc/cpuinfo | grep processor | wc -l";
 
-    private List<CpuState> mStates = new ArrayList<>();
-    private SparseArray<Long> mOffsets = new SparseArray<>();
+    private int mCpuCount;
+    private List<List<CpuState>> mStates = new ArrayList<>();
+    private List<SparseArray<Long>> mOffsets = new ArrayList<>();
 
     /** exception class */
     public class CpuStateMonitorException extends Exception {
@@ -58,24 +61,26 @@ public class CpuStateMonitor {
     }
 
     /**
+     * @param cpu the CPU number
      * @return List of CpuState with the offsets applied
      */
-    public List<CpuState> getStates() {
+    public List<CpuState> getStates(int cpu) {
         List<CpuState> states = new ArrayList<>();
+        SparseArray<Long> offsets = mOffsets.get(cpu);
 
         /* check for an existing offset, and if it's not too big, subtract it
          * from the duration, otherwise just add it to the return List */
-        for (CpuState state : mStates) {
+        for (CpuState state : states) {
             long duration = state.duration;
-            if(mOffsets.indexOfKey(state.freq) >= 0){
-                long offset = mOffsets.get(state.freq);
+            if(offsets.indexOfKey(state.freq) >= 0){
+                long offset = offsets.get(state.freq);
                 if (offset <= duration) {
                     duration -= offset;
                 } else {
                     /* offset > duration implies our offsets are now invalid,
                      * so clear and recall this function */
-                    mOffsets.clear();
-                    return getStates();
+                    offsets.clear();
+                    return getStates(cpu);
                 }
             }
 
@@ -89,16 +94,17 @@ public class CpuStateMonitor {
      * @return Sum of all state durations including deep sleep, accounting
      * for offsets
      */
-    public long getTotalStateTime() {
+    public long getTotalStateTime(int cpu) {
         long sum = 0;
         long offset = 0;
 
-        for (CpuState state : mStates) {
+        for (CpuState state : mStates.get(cpu)) {
             sum += state.duration;
         }
 
-        for (int i = 0; i < mOffsets.size(); i++) {
-            offset += mOffsets.valueAt(i);
+        SparseArray<Long> offsets = mOffsets.get(cpu);
+        for (int i = 0; i < offsets.size(); i++) {
+            offset += offsets.valueAt(i);
         }
 
         return sum - offset;
@@ -107,28 +113,8 @@ public class CpuStateMonitor {
     /**
      * @return Map of freq->duration of all the offsets
      */
-    SparseArray<Long> getOffsets() {
+    List<SparseArray<Long>> getOffsets() {
         return mOffsets;
-    }
-
-    /**
-     * Sets the offset map (freq->duration offset)
-     */
-    void setOffsets(SparseArray<Long> offsets) {
-        mOffsets = offsets;
-    }
-
-    /**
-     * Updates the current time in states and then sets the offset map to the
-     * current duration, effectively "zeroing out" the timers
-     */
-    public void setOffsets() throws CpuStateMonitorException {
-        mOffsets.clear();
-        updateStates();
-
-        for (CpuState state : mStates) {
-            mOffsets.put(state.freq, state.duration);
-        }
     }
 
     /**
@@ -138,49 +124,76 @@ public class CpuStateMonitor {
         mOffsets.clear();
     }
 
-    /**
-     * @return a list of all the CPU frequency states, which contains
-     * both a frequency and a duration (time spent in that state
-     */
-    public List<CpuState> updateStates()
-        throws CpuStateMonitorException {
-        /* attempt to create a buffered reader to the time in state
-         * file and read in the states to the class */
-        try {
-            InputStream is = new FileInputStream(TIME_IN_STATE_PATH);
-            InputStreamReader ir = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(ir);
+    public void updateCpuCount() {
+        try{
+            Process process = Runtime.getRuntime().exec(CPU_COUNT_CMD);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            String output = reader.readLine();
+            Log.d("TORTEL", "CPU Count output: "+output);
+            process.waitFor();
+            mCpuCount = Integer.parseInt(output);
+
+            mOffsets.clear();
             mStates.clear();
-            readInStates(br);
-            is.close();
-        } catch (IOException e) {
-            throw new CpuStateMonitorException(
-                    "Problem opening time-in-states file");
+
+            for(int i =0; i < mCpuCount; i++){
+                mOffsets.add(new SparseArray<Long>());
+                mStates.add(new ArrayList<CpuState>());
+            }
+        } catch (Exception e){
+            Log.e("SHIT", "Exception gettting CPU count", e);
+        }
+    }
+
+    /**
+     */
+    public void updateStates()
+        throws CpuStateMonitorException {
+        if(mCpuCount == 0){
+            updateCpuCount();
         }
 
-        /* deep sleep time determined by difference between elapsed
-         * (total) boot time and the system uptime (awake) */
-        long sleepTime = (SystemClock.elapsedRealtime()
-                - SystemClock.uptimeMillis()) / 10;
-        mStates.add(new CpuState(0, sleepTime));
+        for(int cpu=0; cpu < mCpuCount; cpu++){
+            List<CpuState> states = mStates.get(cpu);
+            SparseArray<Long> offsets = mOffsets.get(cpu);
 
-        Collections.sort(mStates, Collections.reverseOrder());
+            /* attempt to create a buffered reader to the time in state
+             * file and read in the states to the class */
+            try {
+                InputStream is = new FileInputStream(TIME_IN_STATE_PATH);
+                InputStreamReader ir = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(ir);
+                states.clear();
+                readInStates(br, cpu, states);
+                is.close();
+            } catch (IOException e) {
+                throw new CpuStateMonitorException(
+                        "Problem opening time-in-states file");
+            }
 
-        return mStates;
+            /* deep sleep time determined by difference between elapsed
+             * (total) boot time and the system uptime (awake) */
+            long sleepTime = (SystemClock.elapsedRealtime()
+                    - SystemClock.uptimeMillis()) / 10;
+            states.add(new CpuState(0, sleepTime));
+
+            Collections.sort(states, Collections.reverseOrder());
+        }
     }
 
     /**
      * read from a provided BufferedReader the state lines into the
      * States member field
      */
-    private void readInStates(BufferedReader br)
+    private void readInStates(BufferedReader br, int cpu, List<CpuState> states)
         throws CpuStateMonitorException {
         try {
             String line;
             while ((line = br.readLine()) != null) {
                 // split open line and convert to Integers
                 String[] nums = line.split(" ");
-                mStates.add(new CpuState(
+                states.add(new CpuState(
                         Integer.parseInt(nums[0]),
                         Long.parseLong(nums[1])));
             }
