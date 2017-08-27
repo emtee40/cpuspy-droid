@@ -8,6 +8,9 @@ android {
         applicationId "com.tortel.cpuspy"
         minSdkVersion 19
         targetSdkVersion 26
+
+        versionCode 10
+        versionName "1.0.0"
     }
 
     buildTypes {

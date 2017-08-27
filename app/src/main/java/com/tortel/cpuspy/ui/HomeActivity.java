@@ -8,11 +8,18 @@ package com.tortel.cpuspy.ui;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.tortel.cpuspy.*;
 import com.tortel.cpuspy.CpuStateMonitor.CpuStateMonitorException;
 import android.util.Log;
@@ -20,8 +27,11 @@ import android.util.Log;
 /** main activity class */
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "CpuSpy";
+    public static final String DATA_LOADED = "LOADED";
 
     private CpuSpyApp mApp = null;
+    private DataReceiver mReceiver = new DataReceiver();
+    private StateFragmentAdapter mAdapter;
 
     /**
      * Initialize the Activity
@@ -33,8 +43,20 @@ public class HomeActivity extends AppCompatActivity {
         // inflate the view, stash the app context, and get all UI elements
         setContentView(R.layout.home_layout);
         mApp = (CpuSpyApp)getApplicationContext();
+        mAdapter = new StateFragmentAdapter(mApp, getSupportFragmentManager());
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter(DATA_LOADED));
 
+        ViewPager pager = findViewById(R.id.pager);
+        pager.setAdapter(mAdapter);
 
+        SmartTabLayout indicator = findViewById(R.id.indicator);
+        indicator.setViewPager(pager);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     /**
@@ -76,30 +98,43 @@ public class HomeActivity extends AppCompatActivity {
         return true;
     }
 
+    private class DataReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     /**
      * Attempt to update the time-in-state info
      */
     public void refreshData() {
-        new RefreshStateDataTask().execute((Void)null);
+        new RefreshStateDataTask(mApp.getBaseContext(), mApp.getCpuStateMonitor()).execute();
     }
 
     /**
      * Keep updating the state data off the UI thread for slow devices
      */
-    protected class RefreshStateDataTask extends AsyncTask<Void, Void, Void> {
+    protected static class RefreshStateDataTask extends AsyncTask<Void, Void, Void> {
+        private Context mContext;
+        private CpuStateMonitor mMonitor;
+
+        public RefreshStateDataTask(Context context, CpuStateMonitor monitor) {
+            mMonitor = monitor;
+            mContext = context;
+        }
 
         /**
          * Stuff to do on a seperate thread
          */
         @Override
         protected Void doInBackground(Void... v) {
-            CpuStateMonitor monitor = mApp.getCpuStateMonitor();
             try {
-                monitor.updateStates();
+                mMonitor.updateStates();
             } catch (CpuStateMonitorException e) {
-                Log.e(TAG, "Problem getting CPU states");
+                Log.e(TAG, "Problem getting CPU states", e);
             }
-
             return null;
         }
 
@@ -115,8 +150,7 @@ public class HomeActivity extends AppCompatActivity {
          */
         @Override
         protected void onPostExecute(Void v) {
-            log("finished data update");
-            // TODO
+            LocalBroadcastManager.getInstance(mContext).sendBroadcast(new Intent(DATA_LOADED));
         }
     }
 

@@ -10,6 +10,7 @@ package com.tortel.cpuspy;
 // imports
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,9 +30,9 @@ import android.util.SparseArray;
  */
 public class CpuStateMonitor {
     private static final String TIME_IN_STATE_PATH =
-        "/sys/devices/system/cpu/cpuNUM/cpufreq/stats/time_in_state";
-    private static final String CPU_COUNT_CMD =
-            "cat /proc/cpuinfo | grep processor | wc -l";
+        "/sys/devices/system/cpu/cpu#/cpufreq/stats/time_in_state";
+    private static final String CPU_INFO_PATH =
+            "/proc/cpuinfo";
 
     private int mCpuCount;
     private List<List<CpuState>> mStates = new ArrayList<>();
@@ -58,6 +59,10 @@ public class CpuStateMonitor {
         public int compareTo(@NonNull CpuState state) {
             return Integer.compare(freq, state.freq);
         }
+    }
+
+    public int getCpuCount() {
+        return mCpuCount;
     }
 
     /**
@@ -126,13 +131,17 @@ public class CpuStateMonitor {
 
     public void updateCpuCount() {
         try{
-            Process process = Runtime.getRuntime().exec(CPU_COUNT_CMD);
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String output = reader.readLine();
-            Log.d("TORTEL", "CPU Count output: "+output);
-            process.waitFor();
-            mCpuCount = Integer.parseInt(output);
+            BufferedReader reader = new BufferedReader(new FileReader(CPU_INFO_PATH));
+            String line = null;
+            int count = 0;
+            while((line = reader.readLine()) != null){
+                Log.d("TORTEL", "CPU info line: "+line);
+                if(line.contains("processor")) {
+                    count++;
+                }
+            }
+            mCpuCount = count;
+            Log.d("TORTEL", "CPU count "+ mCpuCount);
 
             mOffsets.clear();
             mStates.clear();
@@ -161,7 +170,9 @@ public class CpuStateMonitor {
             /* attempt to create a buffered reader to the time in state
              * file and read in the states to the class */
             try {
-                InputStream is = new FileInputStream(TIME_IN_STATE_PATH);
+                String path = TIME_IN_STATE_PATH.replace('#', Character.forDigit(cpu, 10));
+                Log.d("TORTEL", "CPU state file path: "+ path);
+                InputStream is = new FileInputStream(path);
                 InputStreamReader ir = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(ir);
                 states.clear();

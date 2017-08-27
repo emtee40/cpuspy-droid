@@ -22,6 +22,8 @@ import java.util.List;
  * Fragment that shows the CPU state info
  */
 public class StateFragment extends Fragment {
+    public static final String CPU = "cpu";
+
     // the views
     private LinearLayout mStatesView = null;
     private TextView mAdditionalStates = null;
@@ -36,6 +38,7 @@ public class StateFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mCpu = getArguments().getInt(CPU);
         mApp = (CpuSpyApp) getActivity().getApplicationContext();
     }
 
@@ -55,6 +58,9 @@ public class StateFragment extends Fragment {
                 R.id.ui_header_total_state_time);
         mStatesWarning = view.findViewById(R.id.ui_states_warning);
         mTotalStateTime = view.findViewById(R.id.ui_total_state_time);
+
+        updateView();
+
         return view;
     }
 
@@ -67,7 +73,7 @@ public class StateFragment extends Fragment {
          * extraStates (missing) */
         CpuStateMonitor monitor = mApp.getCpuStateMonitor();
         mStatesView.removeAllViews();
-        List<String> extraStates = new ArrayList<String>();
+        List<String> extraStates = new ArrayList<>();
         for (CpuStateMonitor.CpuState state : monitor.getStates(mCpu)) {
             if (state.duration > 0) {
                 generateStateRow(state, mStatesView);

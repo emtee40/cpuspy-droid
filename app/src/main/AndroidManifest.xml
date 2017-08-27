@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.tortel.cpuspy"
-    android:versionCode="99999"
-    android:versionName="@string/version_name">
+    package="com.tortel.cpuspy">
 
     <application
         android:label="@string/app_name"
