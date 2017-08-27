@@ -20,4 +20,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:26.0.1'
+    // https://github.com/ogaclejapan/SmartTabLayout
+    compile 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
 }

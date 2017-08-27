@@ -1,90 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:orientation="vertical" >
 
-    <LinearLayout
+    <com.ogaclejapan.smarttablayout.SmartTabLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/indicator"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:layout_height="48dp"
+        app:stl_defaultTabTextHorizontalPadding="24dp"
+        app:stl_indicatorColor="@color/primary"
+        app:stl_indicatorInterpolation="linear"
+        app:stl_indicatorThickness="3dp"
+        app:stl_titleOffset="auto_center"
+        app:stl_underlineThickness="1dp"
+        app:stl_defaultTabTextColor="@android:color/white" />
 
-        <TextView
-            style="@style/infoHeader"
-            android:text="@string/time_in_state"
-            />
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        />
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/ui_states_view"
-            android:paddingBottom="10dp"
-            />
-
-        <TextView
-            android:id="@+id/ui_states_warning"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:textColor="#ffffff"
-            android:textSize="20sp"
-            android:background="#551111"
-            android:text="@string/warning_no_state"
-            android:visibility="gone"
-            />
-
-
-        <TextView
-            android:id="@+id/ui_header_additional_states"
-            style="@style/infoHeader"
-            android:visibility="gone"
-            android:text="@string/unused_states"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:id="@+id/ui_additional_states"
-            android:padding="6dp"
-            />
-
-        <TextView
-            android:id="@+id/ui_header_total_state_time"
-            style="@style/infoHeader"
-            android:text="@string/total_time"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:textColor="#dddddd"
-            android:padding="7dp"
-            android:id="@+id/ui_total_state_time"
-            android:gravity="center_horizontal"
-            />
-
-        <TextView
-            style="@style/infoHeader"
-            android:text="@string/kernel_info"
-            />
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/kernel"
-            android:textSize="19sp"
-            android:textColor="#dddddd"
-            android:padding="10dp"
-            android:id="@+id/ui_kernel_string"
-            />
-
-    </LinearLayout>
-
-</ScrollView>
+</LinearLayout>
 
 
