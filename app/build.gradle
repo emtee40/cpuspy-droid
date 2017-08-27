@@ -10,7 +10,7 @@ android {
         targetSdkVersion 26
 
         versionCode 10
-        versionName "1.0.0"
+        versionName "1.0.1"
     }
 
     buildTypes {
