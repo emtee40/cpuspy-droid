@@ -13,6 +13,7 @@
         app:stl_defaultTabTextHorizontalPadding="24dp"
         app:stl_indicatorColor="@color/primary"
         app:stl_indicatorInterpolation="linear"
+        app:stl_distributeEvenly="true"
         app:stl_indicatorThickness="3dp"
         app:stl_titleOffset="auto_center"
         app:stl_underlineThickness="1dp"

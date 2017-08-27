@@ -33,6 +33,7 @@ public class HomeActivity extends AppCompatActivity {
     private DataReceiver mReceiver = new DataReceiver();
     private StateFragmentAdapter mAdapter;
     private ViewPager mPager;
+    private SmartTabLayout mIndicator;
 
     /**
      * Initialize the Activity
@@ -50,8 +51,8 @@ public class HomeActivity extends AppCompatActivity {
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mAdapter);
 
-        SmartTabLayout indicator = findViewById(R.id.indicator);
-        indicator.setViewPager(mPager);
+        mIndicator = findViewById(R.id.indicator);
+        mIndicator.setViewPager(mPager);
     }
 
     @Override
@@ -105,6 +106,7 @@ public class HomeActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             mAdapter.notifyDataSetChanged();
             mPager.setAdapter(mAdapter);
+            mIndicator.setViewPager(mPager);
         }
     }
 

@@ -64,11 +64,17 @@ public class StateFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        updateView();
+    }
+
     /**
      * Generate and update all UI elements
      */
     public void updateView() {
-        /** Get the CpuStateMonitor from the app, and iterate over all states,
+        /* Get the CpuStateMonitor from the app, and iterate over all states,
          * creating a row if the duration is > 0 or otherwise marking it in
          * extraStates (missing) */
         CpuStateMonitor monitor = mApp.getCpuStateMonitor();
@@ -125,17 +131,16 @@ public class StateFragment extends Fragment {
      * @return a View that correpsonds to a CPU freq state row as specified
      * by the state parameter
      */
-    private View generateStateRow(CpuStateMonitor.CpuState state, ViewGroup parent) {
+    private void generateStateRow(CpuStateMonitor.CpuState state, ViewGroup parent) {
         // inflate the XML into a view in the parent
-        LayoutInflater inf = LayoutInflater.from((Context) mApp);
+        LayoutInflater inf = LayoutInflater.from(mApp);
         LinearLayout theRow = (LinearLayout)inf.inflate(
                 R.layout.state_row, parent, false);
 
         // what percetnage we've got
         CpuStateMonitor monitor = mApp.getCpuStateMonitor();
-        float per = (float)state.duration * 100 /
-                monitor.getTotalStateTime(mCpu);
-        String sPer = (int)per + "%";
+        int percent = (int) ((float)state.duration * 100 /
+                monitor.getTotalStateTime(mCpu));
 
         // state name
         String sFreq;
@@ -146,26 +151,24 @@ public class StateFragment extends Fragment {
         }
 
         // duration
-        long tSec = state.duration / 100;
-        String sDur = sToString(tSec);
+        String sDur = sToString(state.duration / 100);
 
         // map UI elements to objects
-        TextView freqText = (TextView)theRow.findViewById(R.id.ui_freq_text);
-        TextView durText = (TextView)theRow.findViewById(
+        TextView freqText = theRow.findViewById(R.id.ui_freq_text);
+        TextView durText = theRow.findViewById(
                 R.id.ui_duration_text);
-        TextView perText = (TextView)theRow.findViewById(
+        TextView perText = theRow.findViewById(
                 R.id.ui_percentage_text);
-        ProgressBar bar = (ProgressBar)theRow.findViewById(R.id.ui_bar);
+        ProgressBar bar = theRow.findViewById(R.id.ui_bar);
 
         // modify the row
         freqText.setText(sFreq);
-        perText.setText(sPer);
+        perText.setText(percent + "%");
         durText.setText(sDur);
-        bar.setProgress((int)per);
+        bar.setProgress(percent);
 
         // add it to parent and return
         parent.addView(theRow);
-        return theRow;
     }
 
     /**
