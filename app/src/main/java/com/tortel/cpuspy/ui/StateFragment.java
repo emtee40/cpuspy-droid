@@ -87,7 +87,7 @@ public class StateFragment extends Fragment {
         }
 
         // show the red warning label if no states found
-        if ( monitor.getStates(mCpu).size() == 0) {
+        if (monitor.getStates(mCpu).size() == 0) {
             mStatesWarning.setVisibility(View.VISIBLE);
             mHeaderTotalStateTime.setVisibility(View.GONE);
             mTotalStateTime.setVisibility(View.GONE);

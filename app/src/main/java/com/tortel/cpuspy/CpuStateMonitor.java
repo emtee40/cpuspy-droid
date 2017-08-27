@@ -21,7 +21,6 @@ import java.util.List;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.util.SparseArray;
 
 /**
  * CpuStateMonitor is a class responsible for querying the system and getting
@@ -36,7 +35,6 @@ public class CpuStateMonitor {
 
     private int mCpuCount;
     private List<List<CpuState>> mStates = new ArrayList<>();
-    private List<SparseArray<Long>> mOffsets = new ArrayList<>();
 
     /** exception class */
     public class CpuStateMonitorException extends Exception {
@@ -70,29 +68,7 @@ public class CpuStateMonitor {
      * @return List of CpuState with the offsets applied
      */
     public List<CpuState> getStates(int cpu) {
-        List<CpuState> states = new ArrayList<>();
-        SparseArray<Long> offsets = mOffsets.get(cpu);
-
-        /* check for an existing offset, and if it's not too big, subtract it
-         * from the duration, otherwise just add it to the return List */
-        for (CpuState state : states) {
-            long duration = state.duration;
-            if(offsets.indexOfKey(state.freq) >= 0){
-                long offset = offsets.get(state.freq);
-                if (offset <= duration) {
-                    duration -= offset;
-                } else {
-                    /* offset > duration implies our offsets are now invalid,
-                     * so clear and recall this function */
-                    offsets.clear();
-                    return getStates(cpu);
-                }
-            }
-
-            states.add(new CpuState(state.freq, duration));
-        }
-
-        return states;
+        return mStates.get(cpu);
     }
 
     /**
@@ -101,32 +77,12 @@ public class CpuStateMonitor {
      */
     public long getTotalStateTime(int cpu) {
         long sum = 0;
-        long offset = 0;
 
         for (CpuState state : mStates.get(cpu)) {
             sum += state.duration;
         }
 
-        SparseArray<Long> offsets = mOffsets.get(cpu);
-        for (int i = 0; i < offsets.size(); i++) {
-            offset += offsets.valueAt(i);
-        }
-
-        return sum - offset;
-    }
-
-    /**
-     * @return Map of freq->duration of all the offsets
-     */
-    List<SparseArray<Long>> getOffsets() {
-        return mOffsets;
-    }
-
-    /**
-     * removes state offsets
-     */
-    public void removeOffsets() {
-        mOffsets.clear();
+        return sum;
     }
 
     public void updateCpuCount() {
@@ -143,11 +99,9 @@ public class CpuStateMonitor {
             mCpuCount = count;
             Log.d("TORTEL", "CPU count "+ mCpuCount);
 
-            mOffsets.clear();
             mStates.clear();
 
             for(int i =0; i < mCpuCount; i++){
-                mOffsets.add(new SparseArray<Long>());
                 mStates.add(new ArrayList<CpuState>());
             }
         } catch (Exception e){
@@ -165,7 +119,6 @@ public class CpuStateMonitor {
 
         for(int cpu=0; cpu < mCpuCount; cpu++){
             List<CpuState> states = mStates.get(cpu);
-            SparseArray<Long> offsets = mOffsets.get(cpu);
 
             /* attempt to create a buffered reader to the time in state
              * file and read in the states to the class */

@@ -32,6 +32,7 @@ public class HomeActivity extends AppCompatActivity {
     private CpuSpyApp mApp = null;
     private DataReceiver mReceiver = new DataReceiver();
     private StateFragmentAdapter mAdapter;
+    private ViewPager mPager;
 
     /**
      * Initialize the Activity
@@ -46,11 +47,11 @@ public class HomeActivity extends AppCompatActivity {
         mAdapter = new StateFragmentAdapter(mApp, getSupportFragmentManager());
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter(DATA_LOADED));
 
-        ViewPager pager = findViewById(R.id.pager);
-        pager.setAdapter(mAdapter);
+        mPager = findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
 
         SmartTabLayout indicator = findViewById(R.id.indicator);
-        indicator.setViewPager(pager);
+        indicator.setViewPager(mPager);
     }
 
     @Override
@@ -103,6 +104,7 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             mAdapter.notifyDataSetChanged();
+            mPager.setAdapter(mAdapter);
         }
     }
 
