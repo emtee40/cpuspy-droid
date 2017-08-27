@@ -28,6 +28,7 @@ import android.util.Log;
  * offsets to "restart" the state timers
  */
 public class CpuStateMonitor {
+    private static final String TAG = "CpuSpy";
     private static final String TIME_IN_STATE_PATH =
         "/sys/devices/system/cpu/cpu#/cpufreq/stats/time_in_state";
     private static final String CPU_INFO_PATH =
@@ -91,13 +92,13 @@ public class CpuStateMonitor {
             String line = null;
             int count = 0;
             while((line = reader.readLine()) != null){
-                Log.d("TORTEL", "CPU info line: "+line);
+                // Log.d(TAG, "CPU info line: "+line);
                 if(line.contains("processor")) {
                     count++;
                 }
             }
             mCpuCount = count;
-            Log.d("TORTEL", "CPU count "+ mCpuCount);
+            // Log.d(TAG, "CPU count "+ mCpuCount);
 
             mStates.clear();
 
@@ -105,7 +106,7 @@ public class CpuStateMonitor {
                 mStates.add(new ArrayList<CpuState>());
             }
         } catch (Exception e){
-            Log.e("SHIT", "Exception gettting CPU count", e);
+            Log.e(TAG, "Exception gettting CPU count", e);
         }
     }
 
@@ -124,7 +125,7 @@ public class CpuStateMonitor {
              * file and read in the states to the class */
             try {
                 String path = TIME_IN_STATE_PATH.replace('#', Character.forDigit(cpu, 10));
-                Log.d("TORTEL", "CPU state file path: "+ path);
+                // Log.d(TAG, "CPU state file path: "+ path);
                 InputStream is = new FileInputStream(path);
                 InputStreamReader ir = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(ir);

@@ -1,6 +1,5 @@
 package com.tortel.cpuspy.ui;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -128,8 +127,7 @@ public class StateFragment extends Fragment {
     }
 
     /**
-     * @return a View that correpsonds to a CPU freq state row as specified
-     * by the state parameter
+     * Set up the state row
      */
     private void generateStateRow(CpuStateMonitor.CpuState state, ViewGroup parent) {
         // inflate the XML into a view in the parent
