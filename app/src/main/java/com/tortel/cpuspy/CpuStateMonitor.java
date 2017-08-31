@@ -9,6 +9,7 @@ package com.tortel.cpuspy;
 
 // imports
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -31,6 +32,8 @@ public class CpuStateMonitor {
     private static final String TAG = "CpuSpy";
     private static final String TIME_IN_STATE_PATH =
         "/sys/devices/system/cpu/cpu#/cpufreq/stats/time_in_state";
+    private static final String ALT_TIME_IN_STATE_PATH =
+            "/sys/devices/system/cpu/cpufreq/stats/cpu#/time_in_state";
     private static final String CPU_INFO_PATH =
             "/proc/cpuinfo";
 
@@ -125,8 +128,13 @@ public class CpuStateMonitor {
              * file and read in the states to the class */
             try {
                 String path = TIME_IN_STATE_PATH.replace('#', Character.forDigit(cpu, 10));
+                File stateFile = new File(path);
+                if (!stateFile.exists()) {
+                    path = ALT_TIME_IN_STATE_PATH.replace('#', Character.forDigit(cpu, 10));
+                    stateFile = new File(path);
+                }
                 // Log.d(TAG, "CPU state file path: "+ path);
-                InputStream is = new FileInputStream(path);
+                InputStream is = new FileInputStream(stateFile);
                 InputStreamReader ir = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(ir);
                 states.clear();
