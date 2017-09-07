@@ -30,10 +30,10 @@ import android.util.Log;
  */
 public class CpuStateMonitor {
     private static final String TAG = "CpuSpy";
-    private static final String TIME_IN_STATE_PATH =
-        "/sys/devices/system/cpu/cpu#/cpufreq/stats/time_in_state";
-    private static final String ALT_TIME_IN_STATE_PATH =
-            "/sys/devices/system/cpu/cpufreq/stats/cpu#/time_in_state";
+    private static final String TIME_IN_STATE_PATHS[] = {
+            "/sys/devices/system/cpu/cpu#/cpufreq/stats/time_in_state",
+            "/sys/devices/system/cpu/cpufreq/stats/cpu#/time_in_state"
+    };
     private static final String CPU_INFO_PATH =
             "/proc/cpuinfo";
 
@@ -127,19 +127,20 @@ public class CpuStateMonitor {
             /* attempt to create a buffered reader to the time in state
              * file and read in the states to the class */
             try {
-                String path = TIME_IN_STATE_PATH.replace('#', Character.forDigit(cpu, 10));
-                File stateFile = new File(path);
-                if (!stateFile.exists()) {
-                    path = ALT_TIME_IN_STATE_PATH.replace('#', Character.forDigit(cpu, 10));
-                    stateFile = new File(path);
+                File stateFile = null;
+                for (String path : TIME_IN_STATE_PATHS) {
+                    stateFile = new File(path.replace('#', Character.forDigit(cpu, 10)));
+                    if (stateFile.exists()) {
+                        // Log.d(TAG, "CPU state file path: "+ path);
+                        InputStream is = new FileInputStream(stateFile);
+                        InputStreamReader ir = new InputStreamReader(is);
+                        BufferedReader br = new BufferedReader(ir);
+                        states.clear();
+                        readInStates(br, cpu, states);
+                        is.close();
+                        break;
+                    }
                 }
-                // Log.d(TAG, "CPU state file path: "+ path);
-                InputStream is = new FileInputStream(stateFile);
-                InputStreamReader ir = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(ir);
-                states.clear();
-                readInStates(br, cpu, states);
-                is.close();
             } catch (IOException e) {
                 throw new CpuStateMonitorException(
                         "Problem opening time-in-states file");
