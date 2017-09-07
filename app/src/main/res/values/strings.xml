@@ -14,10 +14,8 @@
 
     <!-- Menu strings -->
     <string name="refresh">Refresh</string>
-    <string name="reset_time">Reset Timers</string>
-    <string name="restore_time">Restore Timers</string>
 
     <!-- Warning strings -->
-    <string name="warning_no_state">No states file found. Are you sure your phone is compatible?\n\nIf you are running a custom ROM or kernel, try contacting its developer to inform him that the states file is not readable.</string>
+    <string name="warning_no_state">No states file found. Either states are not available, or the CPU is disabled.</string>
     <string name="unknown">Unknown</string>
 </resources>
