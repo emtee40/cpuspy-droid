@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    compileSdkVersion 27
 
     defaultConfig {
         applicationId "com.tortel.cpuspy"
         minSdkVersion 19
-        targetSdkVersion 26
+        targetSdkVersion 27
 
         versionCode 10
         versionName "1.0.1"
@@ -22,7 +21,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:26.0.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
     // https://github.com/ogaclejapan/SmartTabLayout
-    compile 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
+    implementation 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
 }
